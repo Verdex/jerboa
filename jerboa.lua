@@ -41,7 +41,7 @@ function parse_constructor(str, index)
     clear_whitespace()
     if sub(str, index, index) == "$" then
         local number = match(sub(str, index), "(%d+)")
-        index = #number + index 
+        index = #number + index + 1
         clear_whitespace()
         if top_level and index <= #str then
             error( "found additional characters")
@@ -52,7 +52,6 @@ function parse_constructor(str, index)
     elseif match( sub(str, index, index), "%u" ) then
         local name = match(sub(str, index), "(%w+)")
         index = #name + index
-        print(index)
         clear_whitespace()
         if top_level and index <= #str then
             error( "found additional characters")
@@ -66,27 +65,30 @@ function parse_constructor(str, index)
         clear_whitespace()
         if index > #str then
             return { t = 'data', k = 'sym', name = name }
-        end
-        if sub(str, index, index) == "(" then
+        elseif sub(str, index, index) == "(" then
+            index = index + 1
             local params = {}
             while sub(str, index, index) ~= ")" do
-                params[#params+1], index = parse_constructor(str, index + 1)
+                params[#params+1], index = parse_constructor(str, index)
+                clear_whitespace()
                 local n = sub(str, index, index)
-                print(n)
                 if n ~= ',' and n ~= ')' then
                     error( "expected comma in param list" )
                 end
+                index = index + 1 -- skip the , character
             end
-            index = index + 1 -- skip the ) character
             clear_whitespace()
+            index = index + 1 -- skip the ) character
             if top_level and index <= #str then
                 error( "found additional characters")
             elseif top_level then
                 return { t = 'data', k = 'fun', name = name, params = params }
             end
             return { t = 'data', k = 'fun', name = name, params = params }, index
-        end 
-        error( "found additional characters")
+        elseif not top_level then
+            return { t = 'data', k = 'sym', name = name }, index
+        end
+        error( "found additional characters : " .. sub(str, index, index) .. " : " .. index)
     else
         error( "Encountered unknown data element: " .. sub( str, index, index ) .. " : " .. index )
     end
@@ -99,4 +101,50 @@ lex blah {
 
 --]]
 
+function test_parse_constructor()
+    local solo_var, index = parse_constructor("Variable") 
+    assert(not index)
+    assert(solo_var)
+    assert(solo_var.k == 'var')
+    assert(solo_var.name == 'Variable')
 
+    local solo_cap, index = parse_constructor("$123")
+    assert(not index)
+    assert(solo_cap)
+    assert(solo_cap.k == 'cap')
+    assert(solo_cap.number == 123)
+
+    local solo_sym, index = parse_constructor("symbol")
+    assert(not index)
+    assert(solo_sym)
+    assert(solo_sym.k == 'sym')
+    assert(solo_sym.name == 'symbol')
+
+    local solo_fun, index = parse_constructor("fun()")
+    assert(not index)
+    assert(solo_fun)
+    assert(solo_fun.k == 'fun')
+    assert(solo_fun.name == 'fun')
+    assert(solo_fun.params)
+    assert(#solo_fun.params == 0)
+
+    local complex, index = parse_constructor("fun ( $1 , Var , sym , fun2 ( sym ) )")
+    assert(not index)
+    assert(complex)
+    assert(complex.k == 'fun')
+    assert(complex.name == 'fun')
+    assert(complex.params)
+    assert(#complex.params == 4)
+    assert(complex.params[1].k == 'cap')
+    assert(complex.params[1].number == 1)
+    assert(complex.params[2].k == 'var')
+    assert(complex.params[2].name == 'Var')
+    assert(complex.params[3].k == 'sym')
+    assert(complex.params[3].name == 'sym')
+    assert(complex.params[4].k == 'fun')
+    assert(complex.params[4].name == 'fun2')
+    assert(complex.params[4].params)
+    assert(#complex.params[4].params == 1)
+    assert(complex.params[4].params[1].k == 'sym')
+    assert(complex.params[4].params[1].name == 'sym')
+end
