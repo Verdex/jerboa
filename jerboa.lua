@@ -40,8 +40,8 @@ function parse_constructor(str, index)
 
     clear_whitespace()
     if sub(str, index, index) == "$" then
-        local number, end_pos = match(sub(str, index), "(%d+)()")
-        index = end_pos 
+        local number = match(sub(str, index), "(%d+)")
+        index = #number + index 
         clear_whitespace()
         if top_level and index <= #str then
             error( "found additional characters")
@@ -50,8 +50,9 @@ function parse_constructor(str, index)
         end
         return { t = 'data', k = 'cap', number = tonumber(number) }, index
     elseif match( sub(str, index, index), "%u" ) then
-        local name, end_pos = match(sub(str, index), "(%w+)()")
-        index = end_pos 
+        local name = match(sub(str, index), "(%w+)")
+        index = #name + index
+        print(index)
         clear_whitespace()
         if top_level and index <= #str then
             error( "found additional characters")
@@ -60,21 +61,23 @@ function parse_constructor(str, index)
         end
         return { t = 'data', k = 'var', name = name }, index
     elseif match( sub(str, index, index), "%l" ) then
-        local name, end_pos = match(sub(str, index), "(%w+)()")
-        index = end_pos 
+        local name = match(sub(str, index), "(%w+)")
+        index = #name + index 
         clear_whitespace()
         if index > #str then
-            return { t = 'data', k = 'sym', name = name }, index
+            return { t = 'data', k = 'sym', name = name }
         end
         if sub(str, index, index) == "(" then
             local params = {}
             while sub(str, index, index) ~= ")" do
                 params[#params+1], index = parse_constructor(str, index + 1)
                 local n = sub(str, index, index)
+                print(n)
                 if n ~= ',' and n ~= ')' then
                     error( "expected comma in param list" )
                 end
             end
+            index = index + 1 -- skip the ) character
             clear_whitespace()
             if top_level and index <= #str then
                 error( "found additional characters")
