@@ -44,16 +44,20 @@ function lex(str)
                 index = index + #m 
                 o.end_char = index
                 output[#output+1] = o 
-                goto done 
+                goto exhaust_rules
             end
         end
-        return { success = false
-               , tokens = output
-               , unknown_token = sub(str, index, index)
-               , index = index
-               }
-        ::done::
+        do
+            return { success = false
+                   , tokens = output
+                   , unknown_token = sub(str, index, index)
+                   , index = index
+                   }
+        end
+
+        ::exhaust_rules::
     end
+
     return {success = true, tokens = output}
 end
 
