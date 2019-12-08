@@ -1,6 +1,6 @@
 
 
-function lua_data_to_string(data)
+function to_eval_string(data)
     if type(data) == "string" then
         return string.format( [["%s"]], data )
     elseif type(data) == "number" then
