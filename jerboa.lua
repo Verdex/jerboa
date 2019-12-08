@@ -40,7 +40,6 @@ function lex(str)
             local m = match( sub(str, index), "^" .. rule.pattern )
             if m then
                 output[#output+1] = rule.constructor( m ) 
-                print( output[#output+1], #m )
                 index = index + #m 
                 goto done 
             end
