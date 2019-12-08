@@ -30,14 +30,17 @@ function lex(str)
     -- rules : [ { pattern, constructor } ]
     local match = string.match
     local sub = string.sub
-    local rules = {} 
+    local rules = { {pattern = "%s+", constructor = function(m) return "space" end}
+                  ; {pattern = "%d+", constructor = function(m) return "number " .. m end}
+                  } 
     local output = {}
     local index = 1
     while index <= #str do
         for _, rule in ipairs( rules ) do
-            local m = match( sub(str, index), rule.pattern )
+            local m = match( sub(str, index), "^" .. rule.pattern )
             if m then
                 output[#output+1] = rule.constructor( m ) 
+                print( output[#output+1], #m )
                 index = index + #m 
                 goto done 
             end
