@@ -30,8 +30,8 @@ function lex(str)
     -- rules : [ { pattern, constructor } ]
     local match = string.match
     local sub = string.sub
-    local rules = { {pattern = "%s+", constructor = function(m) return "space" end}
-                  ; {pattern = "%d+", constructor = function(m) return "number " .. m end}
+    local rules = { {pattern = "%s+", constructor = function(m) return {"space"} end}
+                  ; {pattern = "%d+", constructor = function(m) return {"number " .. m} end}
                   } 
     local output = {}
     local index = 1
@@ -39,15 +39,22 @@ function lex(str)
         for _, rule in ipairs( rules ) do
             local m = match( sub(str, index), "^" .. rule.pattern )
             if m then
-                output[#output+1] = rule.constructor( m ) 
+                local o = rule.constructor(m)
+                o.start_char = index
                 index = index + #m 
+                o.end_char = index
+                output[#output+1] = o 
                 goto done 
             end
         end
-        error("encountered unknown token : " .. sub(str, index, index) .. " at: " .. index)
+        return { success = false
+               , tokens = output
+               , unknown_token = sub(str, index, index)
+               , index = index
+               }
         ::done::
     end
-    return output
+    return {success = true, tokens = output}
 end
 
 --[[
