@@ -30,9 +30,21 @@ function lex(str)
     -- rules : [ { pattern, constructor } ]
     local match = string.match
     local sub = string.sub
-    local rules = { {pattern = "%s+", constructor = function(m) return {"space"} end}
-                  ; {pattern = "%d+", constructor = function(m) return {"number " .. m} end}
-                  } 
+    local rules = { { pattern = "%s+"
+                    , constructor = function(m) return {t = 'data', k = 'atom', name = 'space'} end}
+                  ; { pattern = "%d+"
+                    , constructor = function(m) return { t = 'data'
+                                                       , k = 'fun'
+                                                       , name = 'number' 
+                                                       , params = { { t = 'data', k = 'string', value = m } }
+                                                       } end }
+                  ; { pattern = "%w+"
+                    , constructor = function(m) return { t = 'data' 
+                                                       , k = 'fun' 
+                                                       , name = 'symbol'
+                                                       , params = { { t = 'data', k = 'string', value = m } }
+                                                       } end }
+                  }
     local output = {}
     local index = 1
     while index <= #str do
@@ -154,7 +166,31 @@ end
 function parse(tokens)
     -- rules : dict<rule : string, [{ pattern, constructor}]>
     -- constructor : ([data], var_env) -> data
-    local rules = {}
+    local rules = { main = { { pattern = { { t = 'pattern'
+                                           , k = 'fun'
+                                           , name = 'symbol'
+                                           , params = { { t = 'pattern', k = 'var', name = 'A' } }
+                                           } 
+                                           ; 
+                                           { t = 'pattern'
+                                           , k = 'atom'
+                                           , name = 'space'
+                                           } 
+                                           ;
+                                           { t = 'pattern'
+                                           , k = 'fun'
+                                           , name = 'number'
+                                           , params = { { t = 'pattern', k = 'var', name = 'B' } }
+                                           }
+                                         }
+                             , constructor = function(caps, env) return { t = 'data'
+                                                                        , k = 'string'
+                                                                        , value = env['A'].value .. ' ' .. env['B'].value
+
+                                                                        } end
+                             } 
+                           }
+                  }
    
     local output, index = parse_rule(tokens, 1, rules, 'main')  
 
