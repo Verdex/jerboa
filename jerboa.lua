@@ -13,9 +13,9 @@ function to_eval_string(data)
         local kvp = {}
         for k, v in pairs( data ) do
             if type(k) == "number" then
-                kvp[#kvp+1] = lua_data_to_string( v )
+                kvp[#kvp+1] = to_eval_string( v )
             elseif type(k) == "string" then
-                kvp[#kvp+1] = string.format( [[ ["%s"] = %s ]], k, lua_data_to_string( v ) )
+                kvp[#kvp+1] = string.format( [[ ["%s"] = %s ]], k, to_eval_string( v ) )
             else
                 error( "encountered non string key" )
             end
