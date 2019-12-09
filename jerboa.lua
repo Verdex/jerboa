@@ -189,6 +189,30 @@ function parse(tokens)
 
                                                                         } end
                              } 
+                             ; 
+                             { pattern = { { t = 'pattern'
+                                           , k = 'fun'
+                                           , name = 'number'
+                                           , params = { { t = 'pattern', k = 'var', name = 'A' } }
+                                           } 
+                                           ; 
+                                           { t = 'pattern'
+                                           , k = 'atom'
+                                           , name = 'space'
+                                           } 
+                                           ;
+                                           { t = 'pattern'
+                                           , k = 'fun'
+                                           , name = 'number'
+                                           , params = { { t = 'pattern', k = 'var', name = 'B' } }
+                                           }
+                                         }
+                             , constructor = function(caps, env) return { t = 'data'
+                                                                        , k = 'string'
+                                                                        , value = 'N'.. env['A'].value .. ' ' .. env['B'].value
+
+                                                                        } end
+                             }
                            }
                   }
    
