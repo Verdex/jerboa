@@ -26,24 +26,48 @@ function to_eval_string(data)
     end
 end
 
+function atom(name)
+    return { t = 'data'
+           ; k = 'atom'
+           ; name = name
+           }
+end
+
+function data_string(value)
+
+end
+
 function lex(str)
     -- rules : [ { pattern, constructor } ]
     local match = string.match
     local sub = string.sub
-    local rules = { { pattern = "%s+"
-                    , constructor = function(m) return {t = 'data', k = 'atom', name = 'space'} end}
-                  ; { pattern = "%d+"
-                    , constructor = function(m) return { t = 'data'
-                                                       , k = 'fun'
-                                                       , name = 'number' 
-                                                       , params = { { t = 'data', k = 'string', value = m } }
-                                                       } end }
-                  ; { pattern = "%w+"
-                    , constructor = function(m) return { t = 'data' 
-                                                       , k = 'fun' 
-                                                       , name = 'symbol'
-                                                       , params = { { t = 'data', k = 'string', value = m } }
-                                                       } end }
+    local rules = { { pattern = "=>"
+                    , constructor = function(m) return atom('rarrow') end 
+                    }
+                  ; { pattern = ";"
+                    , constructor = function(m) return atom('semicolon') end 
+                    }
+                  ; { pattern = ","
+                    , constructor = function(m) return atom('comma') end 
+                    }
+                  ; { pattern = ":"
+                    , constructor = function(m) return atom('colon') end 
+                    }
+                  ; { pattern = "|"
+                    , constructor = function(m) return atom('or') end 
+                    }
+                  ; { pattern = "{"
+                    , constructor = function(m) return atom('lcurl') end
+                    }
+                  ; { pattern = "}"
+                    , constructor = function(m) return atom('rcurl') end
+                    }
+                  ; { pattern = "("
+                    , constructor = function(m) return atom('lparen') end
+                    }
+                  ; { pattern = ")"
+                    , constructor = function(m) return atom('rparen') end
+                    }
                   }
     local output = {}
     local index = 1
