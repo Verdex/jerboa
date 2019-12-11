@@ -33,8 +33,19 @@ function atom(name)
            }
 end
 
-function data_string(value)
+function fun(name, params)
+    return { t = 'data'
+           ; k = 'fun'
+           ; name = name
+           ; params = params
+           }
+end
 
+function data_string(value)
+    return { t = 'data'
+           ; k = 'string'
+           ; value = value
+           }
 end
 
 function lex(str)
@@ -56,6 +67,9 @@ function lex(str)
                   ; { pattern = "|"
                     , constructor = function(m) return atom('or') end 
                     }
+                  ; { pattern = "_"
+                    , constructor = function(m) return atom('wild') end 
+                    }
                   ; { pattern = "{"
                     , constructor = function(m) return atom('lcurl') end
                     }
@@ -67,6 +81,24 @@ function lex(str)
                     }
                   ; { pattern = ")"
                     , constructor = function(m) return atom('rparen') end
+                    }
+                  ; { pattern = "%l%w*"
+                    , constructor = function(m) return fun('symbol', { m }) end
+                    }
+                  ; { pattern = "%u%w*"
+                    , constructor = function(m) return fun('variable', { m }) end
+                    }
+                  ; { pattern = "%$%l%w*"
+                    , constructor = function(m) return fun('ruleReference', 
+                        { data_string(string.sub(m, 2)) }) end
+                    }
+                  ; { pattern = "%%%d+"
+                    , constructor = function(m) return fun('captureReference', 
+                        { data_string(string.sub(m, 2)) }) end
+                    }
+                  ; { pattern = '".*"'
+                    , constructor = function(m) return fun('string', 
+                        { data_string(string.sub(m, 2, -2)) }) end
                     }
                   }
     local output = {}
