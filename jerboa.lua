@@ -52,7 +52,12 @@ function lex(str)
     -- rules : [ { pattern, constructor } ]
     local match = string.match
     local sub = string.sub
-    local rules = { { pattern = "=>"
+    local rules = { 
+                    { pattern = "[\n\r\t ]+"
+                    , constructor = function(m) return atom('nothing') end 
+                    }
+                  ;
+                    { pattern = "=>"
                     , constructor = function(m) return atom('rarrow') end 
                     }
                   ; { pattern = ";"
@@ -76,29 +81,35 @@ function lex(str)
                   ; { pattern = "}"
                     , constructor = function(m) return atom('rcurl') end
                     }
-                  ; { pattern = "("
+                  ; { pattern = "%("
                     , constructor = function(m) return atom('lparen') end
                     }
-                  ; { pattern = ")"
+                  ; { pattern = "%)"
                     , constructor = function(m) return atom('rparen') end
                     }
-                  ; { pattern = "%l%w*"
-                    , constructor = function(m) return fun('symbol', { m }) end
+                  ; { pattern = "%l[%w_]*"
+                    , constructor = function(m) return fun('symbol', 
+                        { data_string(m) }) end
                     }
-                  ; { pattern = "%u%w*"
-                    , constructor = function(m) return fun('variable', { m }) end
+                  ; { pattern = "%u[%w_]*"
+                    , constructor = function(m) return fun('variable', 
+                        { data_string(m) }) end
                     }
-                  ; { pattern = "%$%l%w*"
-                    , constructor = function(m) return fun('ruleReference', 
-                        { data_string(string.sub(m, 2)) }) end
+                  ; { pattern = "%$%l[%w_]*"
+                    , constructor = function(m) return fun('rule_reference', 
+                        { data_string(m) }) end
                     }
                   ; { pattern = "%%%d+"
-                    , constructor = function(m) return fun('captureReference', 
-                        { data_string(string.sub(m, 2)) }) end
+                    , constructor = function(m) return fun('capture_reference', 
+                        { data_string(m) }) end
                     }
-                  ; { pattern = '".*"'
+                  ; { pattern = '".-"'
                     , constructor = function(m) return fun('string', 
-                        { data_string(string.sub(m, 2, -2)) }) end
+                        { data_string(m) }) end
+                    }
+                  ; { pattern = "'.-'"
+                    , constructor = function(m) return fun('string', 
+                        { data_string(m) }) end
                     }
                   }
     local output = {}
@@ -311,4 +322,11 @@ parse blah {
 
 }
 --]]
+
+f = io.open("jerboa.j", 'r')
+i = f:read("*a")
+l = lex(i)
+
+print(to_eval_string(l))
+
 
