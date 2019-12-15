@@ -56,9 +56,11 @@ function lex(str)
                     { pattern = "[\n\r\t ]+"
                     , constructor = function(m) return atom('nothing') end 
                     }
-                  ;
-                    { pattern = "=>"
+                  ; { pattern = "=>"
                     , constructor = function(m) return atom('rarrow') end 
+                    }
+                  ; { pattern = "!"
+                    , constructor = function(m) return atom('nothing') end 
                     }
                   ; { pattern = ";"
                     , constructor = function(m) return atom('semicolon') end 
@@ -317,7 +319,7 @@ lex blah {
 parse blah {
     rule: 
         atom fun(_) fun(B, Var) $rule fun2(Other, Var, atom2, fun3(A))
-        => Blah($1, atom, fun(atom), Var, A) // $1 would refer to whatever is in position 1) 
+        => Blah(%1, atom, fun(atom), Var, A) // %1 would refer to whatever is in position 1) 
         | blah => Blah();
 
 }
