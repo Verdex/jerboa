@@ -20,3 +20,13 @@ type pattern =
     | RuleRef of string
     | ParserRef of string * string
 
+type lexer_rule = Lex of string * constructor
+
+type lexer = Lexer of string * lexer_rule list
+
+type parser_case = Case of pattern list * constructor
+
+type parser_rule = Parse of string * parser_case list
+
+type parser = Parser of string * parser_rule list
+
