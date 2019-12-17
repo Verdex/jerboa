@@ -37,4 +37,21 @@ parse jerboa {
         symbol("lex") symbol(Name) lcurl %lex_rules rcurl 
         => lex_rules( Name, %4 ) 
         ;
+
+    lex_rules: $lex_rule $lex_rules => rules(%1, %2) | ! => null ;
+
+    lex_rule: string(Regex) rarrow $constructor semicolon => rule(Regex, %3) ;
+
+    constructor: symbol(Name) lparen $constructor_param_list rparen => function( Name, %3 )
+               | symbol(Name) => symbol( Name ) 
+               ;
+
+    constructor_param_list: comma $constructor_param $constructor_param_list => constructor_param( %2 )
+                          | $constructor_param $constructor_param_list => constructor_param( %1 )
+                          | ! => null
+                          ;
+
+    constructor_param: variable(Name) => variable(Name)
+                     | capture_reference(Number) => capture_reference(Number) 
+                     | %constructor => constructor(%1)
 }
