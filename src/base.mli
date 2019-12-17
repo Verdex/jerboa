@@ -1,0 +1,22 @@
+
+type meta = { start_index : int; end_index : int }
+
+type data = 
+    | Atom of string * meta
+    | Fun of string * data list * meta
+    | String of string * meta
+
+type constructor =
+    | Atom of string
+    | Fun of string * constructor list
+    | CaptureRef of int list (* %1 , %1.%2 , etc  *)
+    | Var of string 
+
+type pattern =
+    | Atom of string
+    | Fun of string * pattern list
+    | Var of string
+    | WildCard
+    | RuleRef of string
+    | ParserRef of string * string
+
