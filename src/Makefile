@@ -1,6 +1,6 @@
 
 all: rules.cmx main.cmx
-	ocamlopt -o jerboa rules.cmx main.cmx
+	ocamlopt -o jerboa str.cmxa rules.cmx main.cmx
 
 main.cmx: base.cmi rules.cmx
 	ocamlopt -c main.ml
