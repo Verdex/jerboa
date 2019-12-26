@@ -9,6 +9,8 @@ let to_eval (input:data) : string = "todo"
 
 (* todo *)
 let lex (lexer : lexer) (input : string) : data = 
+    let is_whitespace c = c = ' ' || c = '\t' || c = '\r' || c = '\n' in
+
     let gen_rules (Lexer (_, rules)) : (Str.regexp * constructor) list = 
         List.map (fun (Lex(rule,cons)) -> (Str.regexp rule, cons)) rules
     in
@@ -30,14 +32,16 @@ let lex (lexer : lexer) (input : string) : data =
     let index = ref 0 in
     let output = ref [] in
     while !index < String.length input do
-        let (result, new_index) = try_rules input !index in 
-        match result with
-        | Some( (value, cons) ) -> output := value :: !output ; index := new_index
-        | None -> raise (LexError !index)
+        if is_whitespace input.[!index] then
+            index := !index + 1
+        else
+            let (result, new_index) = try_rules input !index in 
+            match result with
+            | Some( (value, cons) ) -> output := value :: !output ; index := new_index
+            | None -> raise (LexError !index)
     done 
     ; List.iter (fun x -> Printf.printf "%s\n" x) (List.rev !output)
     ; Atom("todo", {start_index = 0; end_index = 0})
-(* automatically prune whitespace  *)
 
 (* find_lexer, find_parser, find_rule, match_pattern, construct *)
 
@@ -55,4 +59,4 @@ let l = Lexer("lexer", [Lex("[a]", Atom "blah"); Lex("[b]", Atom "blah")] )
 
 
 
-lex l "ab"
+lex l "  a\tb \n"
