@@ -9,10 +9,8 @@ let to_eval (input:data) : string = "todo"
 
 (* todo *)
 let lex (lexer : lexer) (input : string) : data = 
-    let c a b = String.concat "" [a;b] in
-
     let gen_rules (Lexer (_, rules)) : (Str.regexp * constructor) list = 
-        List.map (fun (Lex(rule,cons)) -> (Str.regexp (c "^" rule), cons)) rules
+        List.map (fun (Lex(rule,cons)) -> (Str.regexp rule, cons)) rules
     in
 
     let rules = gen_rules lexer in
@@ -24,23 +22,21 @@ let lex (lexer : lexer) (input : string) : data =
             if is_empty result && Str.string_match rule s i then
                 result := Some( (Str.matched_string s, cons) )
         ) rules
-        ; (!result, Str.match_end ())
+        ; match !result with
+        | Some(_) as res -> (res, Str.match_end())
+        | None as res -> (res, i)
     in 
 
     let index = ref 0 in
     let output = ref [] in
-    let failure = ref false in
     while !index < String.length input do
-        if not !failure then
-            let (result, new_index) = try_rules input !index in 
-            match result with
-            | Some( (value, cons) ) -> output := value :: !output ; index := new_index
-            | None -> failure := true 
-        else
-            raise (LexError !index)
-    done
-    ;
-    Atom("todo", {start_index = 0; end_index = 0})
+        let (result, new_index) = try_rules input !index in 
+        match result with
+        | Some( (value, cons) ) -> output := value :: !output ; index := new_index
+        | None -> raise (LexError !index)
+    done 
+    ; List.iter (fun x -> Printf.printf "%s\n" x) (List.rev !output)
+    ; Atom("todo", {start_index = 0; end_index = 0})
 (* automatically prune whitespace  *)
 
 (* find_lexer, find_parser, find_rule, match_pattern, construct *)
@@ -52,3 +48,11 @@ let parse (lexers : lexer list)
           (initial_parser : string) : data =
 
           Atom( "todo", {start_index = 0; end_index = 0})
+
+let l = Lexer("lexer", [Lex("[a]", Atom "blah"); Lex("[b]", Atom "blah")] )
+
+;;
+
+
+
+lex l "ab"
