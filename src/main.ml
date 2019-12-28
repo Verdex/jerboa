@@ -42,8 +42,7 @@ let lex (lexer : lexer) (input : string) : data list =
             | Some( (value, cons) ) -> output := (value, cons, !index, new_index) :: !output ; index := new_index
             | None -> raise (LexRuleNotFoundError !index)
     done 
-    ; List.iter (fun (x,_,_,_) -> Printf.printf "%s\n" x) (List.rev !output)
-    ; List.map (fun (v, c, s, e) -> construct c [String(v, {start_index = s; end_index = e})] []) (List.rev !output)
+    ; List.map (fun (v, c, s, e) -> construct c [String(v, {start_index = s; end_index = e - 1})] []) (List.rev !output)
 
 (* find_lexer, find_parser, find_rule, match_pattern, construct *)
 
@@ -55,19 +54,19 @@ let parse (lexers : lexer list)
 
           Atom( "todo", {start_index = 0; end_index = 0})
 
-let l = Lexer("lexer", [Lex("[a]", Atom "blah"); Lex("[b]", Atom "blah")] )
+let l = Lexer("lexer", [Lex("[a]", Atom "FoundA")
+                       ; Lex("[b]", Fun("FoundB", [CaptureRef([0])]))
+                       ; Lex("[c]+", Fun("foundC", [CaptureRef([0])]))
+                       ] )
 
 
-;;
+;; let output = lex l "ccc  a\tb \n"
 
-
-lex l "  a\tb \n"
-;;
-let output = construct (CaptureRef([1;1;0])) 
+(* ;; let output = construct (CaptureRef([1;1;0])) 
                         [Atom("ikky", {start_index=5; end_index=9})
                         ; Fun("blah", [Atom("inner1", {start_index=0; end_index=1})
                                       ;Fun("inner2", [ Atom("inner inner 1", {start_index=0; end_index=2})
                                                      ], {start_index=0; end_index=0})
-                                      ], {start_index=10; end_index=11})] []
-;;
-print_data output
+                                      ], {start_index=10; end_index=11})] [] *)
+                                      
+;; List.iter (fun o -> print_data o) output
