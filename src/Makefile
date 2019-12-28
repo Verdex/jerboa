@@ -2,7 +2,7 @@
 all: rules.cmx main.cmx debug.cmx
 	ocamlopt -o jerboa str.cmxa debug.cmx rules.cmx main.cmx
 
-main.cmx: base.cmi rules.cmx 
+main.cmx: base.cmi rules.cmx debug.cmx
 	ocamlopt -c main.ml
 
 rules.cmx: base.cmi

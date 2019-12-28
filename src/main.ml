@@ -1,5 +1,6 @@
 
 open Base
+open Debug (* todo *)
 
 exception LexRuleNotFoundError of int
 exception ConstructNoCapturesFoundError
@@ -109,5 +110,8 @@ let l = Lexer("lexer", [Lex("[a]", Atom "blah"); Lex("[b]", Atom "blah")] )
 
 
 lex l "  a\tb \n"
+
+;; print_data (Atom("blah", {start_index=1; end_index=2}))
+
 
 
