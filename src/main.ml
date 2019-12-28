@@ -1,22 +1,33 @@
 
 open Base
 
-exception LexError of int
+exception LexRuleNotFoundError of int
+exception LexNoCapturesFoundError
 
 (* todo *)
 (* data_to_lexer, data_to_parser *)
 let to_eval (input:data) : string = "todo"
 
 let rec construct (c : constructor) (captures: data list) (var_env : (string * data) list) : data = 
-(* first of first capture and last of last caputure for start and end index *)
+
+    if List.length captures < 1 then
+        raise LexNoCapturesFoundError 
+    ;
+    
+    let pull_meta : data -> meta = function Atom(_, m) -> m | Fun(_, _, m) -> m | String(_, m) -> m in
+
+    let { start_index = start_index } = pull_meta (List.nth captures 0) in
+    let { end_index = end_index } = pull_meta (List.nth captures ((List.length captures) - 1)) in
+    let meta_value = {start_index = start_index ; end_index = end_index } in
+
     match c with
-    | Atom(name) -> Atom(name, {start_index = 0; end_index = 0} ) 
+    | Atom(name) -> Atom(name, meta_value) 
     | Fun(name, params) -> Fun( name 
                               , List.map (fun param -> construct param captures var_env) params
-                              , {start_index = 0; end_index = 0} 
+                              , meta_value 
                               )
-    | CaptureRef(ref_nums) -> Atom("blah", {start_index = 0; end_index = 0}) 
-    | Var(name) -> Atom("blah", {start_index = 0; end_index = 0})
+    | CaptureRef(ref_nums) -> Atom("blah", meta_value) 
+    | Var(name) -> Atom("blah", meta_value)
 
 (* todo *)
 let lex (lexer : lexer) (input : string) : data list = 
@@ -49,7 +60,7 @@ let lex (lexer : lexer) (input : string) : data list =
             let (result, new_index) = try_rules input !index in 
             match result with
             | Some( (value, cons) ) -> output := (value, cons, !index, new_index) :: !output ; index := new_index
-            | None -> raise (LexError !index)
+            | None -> raise (LexRuleNotFoundError !index)
     done 
     ; List.iter (fun (x,_,_,_) -> Printf.printf "%s\n" x) (List.rev !output)
     ; List.map (fun (v, c, s, e) -> construct c [String(v, {start_index = s; end_index = e})] []) (List.rev !output)
