@@ -27,15 +27,20 @@ let rec construct (c : constructor) (captures: data list) (var_env : (string * d
         let rec nest rs (c : data) =
             match (rs, c) with
             | ([], _) -> c
-            | (1::[], (Atom(name, _) as d)) -> d
-            | (1::[], (String(value, _) as d)) -> d
+            | (0::[], (Atom(_, _) as d)) -> d
+            | (0::[], (String(_, _) as d)) -> d
             | (r::rest, Fun(_, params, _)) -> nest rest (l_nth params r)
             | (_, _) -> raise ConstructFailedRefLookupError
         in
 
         let first_ref = l_nth ref_nums 0 in
         
-        nest (List.tl ref_nums) (l_nth captures first_ref)
+        match (List.tl ref_nums, l_nth captures first_ref) with
+        | ([], (Atom(_, _) as d)) -> d
+        | ([], (String(_, _) as d)) -> d
+        | ([], (Fun(_, _, _) as d)) -> d
+        | (refs, Fun(_, params, _)) -> nest (List.tl refs) (l_nth params (List.hd refs))
+        | _ -> raise ConstructFailedRefLookupError
     in
 
     if List.length captures < 1 then
@@ -105,20 +110,17 @@ let parse (lexers : lexer list)
 
 let l = Lexer("lexer", [Lex("[a]", Atom "blah"); Lex("[b]", Atom "blah")] )
 
+
 ;;
 
 
-
 lex l "  a\tb \n"
-
-;; print_data (Atom("blah", {start_index=1; end_index=2}))
-
-;; print_data (String("blah", {start_index=1; end_index=22}))
-
-;; print_data (Fun("function", [], {start_index=1; end_index=33}))
-
-;; print_data (Fun("function", [Atom("ikky", {start_index=1; end_index=2})], {start_index=1; end_index=33}))
-
-;; print_data (Fun("function", [Atom("ikky", {start_index=1; end_index=2})
-                               ;Fun("other", [], {start_index=1; end_index=2})
-                               ], {start_index=1; end_index=33}))
+;;
+let output = construct (CaptureRef([1; 1; 0])) 
+                        [Atom("ikky", {start_index=5; end_index=9})
+                        ; Fun("blah", [Atom("inner1", {start_index=0; end_index=1})
+                                      ;Fun("inner2", [ Atom("inner inner 1", {start_index=0; end_index=2})
+                                                     ], {start_index=0; end_index=0})
+                                      ], {start_index=10; end_index=11})] []
+;;
+print_data output
