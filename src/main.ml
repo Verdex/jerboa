@@ -2,7 +2,9 @@
 open Base
 
 exception LexRuleNotFoundError of int
-exception LexNoCapturesFoundError
+exception ConstructNoCapturesFoundError
+exception ConstructFailedRefLookup
+exception ConstructNthIndexOutOfRange of int * int 
 
 (* todo *)
 (* data_to_lexer, data_to_parser *)
@@ -10,8 +12,31 @@ let to_eval (input:data) : string = "todo"
 
 let rec construct (c : constructor) (captures: data list) (var_env : (string * data) list) : data = 
 
+    let l_nth l i = 
+        if i >= List.length l then
+            raise (ConstructNthIndexOutOfRange(i, (List.length l)))
+        ;
+        List.nth l i
+    in
+
+    let select_capture (ref_nums : int list) (captures : data list) : data =
+            
+        let rec nest rs (c : data) =
+            match (rs, c) with
+            | ([], _) -> c
+            | (1::[], (Atom(name, _) as d)) -> d
+            | (1::[], (String(value, _) as d)) -> d
+            | (r::rest, Fun(_, params, _)) -> nest rest (l_nth params r)
+            | (_, _) -> raise ConstructFailedRefLookup 
+        in
+
+        let first_ref = l_nth ref_nums 0 in
+        
+        nest (List.tl ref_nums) (l_nth captures first_ref)
+    in
+
     if List.length captures < 1 then
-        raise LexNoCapturesFoundError 
+        raise ConstructNoCapturesFoundError 
     ;
     
     let pull_meta : data -> meta = function Atom(_, m) -> m | Fun(_, _, m) -> m | String(_, m) -> m in
@@ -26,7 +51,7 @@ let rec construct (c : constructor) (captures: data list) (var_env : (string * d
                               , List.map (fun param -> construct param captures var_env) params
                               , meta_value 
                               )
-    | CaptureRef(ref_nums) -> Atom("blah", meta_value) 
+    | CaptureRef(ref_nums) -> select_capture ref_nums captures  
     | Var(name) -> Atom("blah", meta_value)
 
 (* todo *)
