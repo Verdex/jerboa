@@ -6,35 +6,33 @@ exception FailedRefLookupError
 exception NthIndexOutOfRangeError of int * int 
 exception TodoError of string
 
-let rec construct (c : constructor) (captures: data list) (var_env : (string * data) list) : data = 
+let l_nth l i = 
+    if i >= List.length l then
+        raise (NthIndexOutOfRangeError(i, (List.length l)))
+    ;
+    List.nth l i
 
-    let l_nth l i = 
-        if i >= List.length l then
-            raise (NthIndexOutOfRangeError(i, (List.length l)))
-        ;
-        List.nth l i
-    in
-
-    let select_capture (ref_nums : int list) (captures : data list) : data =
-            
-        let rec nest rs (c : data) =
-            match (rs, c) with
-            | ([], _) -> c
-            | (0::[], (Atom(_, _) as d)) -> d
-            | (0::[], (String(_, _) as d)) -> d
-            | (r::rest, Fun(_, params, _)) -> nest rest (l_nth params r)
-            | (_, _) -> raise FailedRefLookupError
-        in
-
-        let first_ref = l_nth ref_nums 0 in
+let select_capture (ref_nums : int list) (captures : data list) : data =
         
-        match (List.tl ref_nums, l_nth captures first_ref) with
-        | ([], (Atom(_, _) as d)) -> d
-        | ([], (String(_, _) as d)) -> d
-        | ([], (Fun(_, _, _) as d)) -> d
-        | (refs, Fun(_, params, _)) -> nest (List.tl refs) (l_nth params (List.hd refs))
-        | _ -> raise FailedRefLookupError
+    let rec nest rs (c : data) =
+        match (rs, c) with
+        | ([], _) -> c
+        | (0::[], (Atom(_, _) as d)) -> d
+        | (0::[], (String(_, _) as d)) -> d
+        | (r::rest, Fun(_, params, _)) -> nest rest (l_nth params r)
+        | (_, _) -> raise FailedRefLookupError
     in
+
+    let first_ref = l_nth ref_nums 0 in
+    
+    match (List.tl ref_nums, l_nth captures first_ref) with
+    | ([], (Atom(_, _) as d)) -> d
+    | ([], (String(_, _) as d)) -> d
+    | ([], (Fun(_, _, _) as d)) -> d
+    | (refs, Fun(_, params, _)) -> nest (List.tl refs) (l_nth params (List.hd refs))
+    | _ -> raise FailedRefLookupError
+
+let rec construct (c : constructor) (captures: data list) (var_env : (string * data) list) : data = 
 
     if List.length captures < 1 then
         raise NoCapturesFoundError 
