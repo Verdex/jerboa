@@ -6,7 +6,7 @@ exception ConstructNoCapturesFoundError
 exception ConstructFailedRefLookupError
 exception ConstructNthIndexOutOfRangeError of int * int 
 
-exception Todo of string
+exception TodoError of string
 
 (* todo *)
 (* data_to_lexer, data_to_parser *)
@@ -54,7 +54,7 @@ let rec construct (c : constructor) (captures: data list) (var_env : (string * d
                               , meta_value 
                               )
     | CaptureRef(ref_nums) -> select_capture ref_nums captures  
-    | Var(name) -> Atom("blah", meta_value)
+    | Var(name) -> raise (TodoError "need to implement construct variable selection")
 
 (* todo *)
 let lex (lexer : lexer) (input : string) : data list = 
