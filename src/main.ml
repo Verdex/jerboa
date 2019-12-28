@@ -3,8 +3,10 @@ open Base
 
 exception LexRuleNotFoundError of int
 exception ConstructNoCapturesFoundError
-exception ConstructFailedRefLookup
-exception ConstructNthIndexOutOfRange of int * int 
+exception ConstructFailedRefLookupError
+exception ConstructNthIndexOutOfRangeError of int * int 
+
+exception Todo of string
 
 (* todo *)
 (* data_to_lexer, data_to_parser *)
@@ -14,7 +16,7 @@ let rec construct (c : constructor) (captures: data list) (var_env : (string * d
 
     let l_nth l i = 
         if i >= List.length l then
-            raise (ConstructNthIndexOutOfRange(i, (List.length l)))
+            raise (ConstructNthIndexOutOfRangeError(i, (List.length l)))
         ;
         List.nth l i
     in
@@ -27,7 +29,7 @@ let rec construct (c : constructor) (captures: data list) (var_env : (string * d
             | (1::[], (Atom(name, _) as d)) -> d
             | (1::[], (String(value, _) as d)) -> d
             | (r::rest, Fun(_, params, _)) -> nest rest (l_nth params r)
-            | (_, _) -> raise ConstructFailedRefLookup 
+            | (_, _) -> raise ConstructFailedRefLookupError
         in
 
         let first_ref = l_nth ref_nums 0 in
