@@ -1,8 +1,8 @@
 
-all: rules.cmx main.cmx
-	ocamlopt -o jerboa str.cmxa rules.cmx main.cmx
+all: rules.cmx main.cmx debug.cmx
+	ocamlopt -o jerboa str.cmxa debug.cmx rules.cmx main.cmx
 
-main.cmx: base.cmi rules.cmx
+main.cmx: base.cmi rules.cmx 
 	ocamlopt -c main.ml
 
 rules.cmx: base.cmi
@@ -11,6 +11,10 @@ rules.cmx: base.cmi
 
 base.cmi:
 	ocamlopt -c base.mli
+
+debug.cmx: base.cmi
+	ocamlc -c debug.mli
+	ocamlopt -c debug.ml
 
 clean:
 	rm -rf *.cmi
