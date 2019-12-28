@@ -9,7 +9,6 @@ exception LexRuleNotFoundError of int
 (* data_to_lexer, data_to_parser *)
 let to_eval (input:data) : string = "todo"
 
-(* todo *)
 let lex (lexer : lexer) (input : string) : data list = 
     let is_whitespace c = c = ' ' || c = '\t' || c = '\r' || c = '\n' in
 
