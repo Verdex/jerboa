@@ -113,5 +113,12 @@ lex l "  a\tb \n"
 
 ;; print_data (Atom("blah", {start_index=1; end_index=2}))
 
+;; print_data (String("blah", {start_index=1; end_index=22}))
 
+;; print_data (Fun("function", [], {start_index=1; end_index=33}))
 
+;; print_data (Fun("function", [Atom("ikky", {start_index=1; end_index=2})], {start_index=1; end_index=33}))
+
+;; print_data (Fun("function", [Atom("ikky", {start_index=1; end_index=2})
+                               ;Fun("other", [], {start_index=1; end_index=2})
+                               ], {start_index=1; end_index=33}))

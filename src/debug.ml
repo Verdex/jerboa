@@ -11,7 +11,10 @@ let rec display_data (d : data) =
     match d with 
     | Atom(n, m) -> Printf.sprintf "%s meta: %s" n (display_meta m) 
     | String(v, m) -> Printf.sprintf "\"%s\" meta: %s" v (display_meta m)
-    | Fun(n, ps, m) -> Printf.sprintf "%s(%s)" n (String.concat ", " (List.map display_data ps))
+    | Fun(n, ps, m) -> Printf.sprintf "%s(%s) meta: %s" 
+                                      n 
+                                      (String.concat ",\n\t" (List.map display_data ps)) 
+                                      (display_meta m)
 
 let print_data (d : data) = Printf.printf "%s\n" (display_data d)
 
