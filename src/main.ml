@@ -9,7 +9,7 @@ open Debug (* todo *)
 (* data_to_lexer, data_to_parser *)
 let to_eval (input:data) : string = "todo"
 
-(* find_lexer, find_parser, find_rule, match_pattern, construct *)
+(* match_pattern *)
 
 exception LexerNotFound of string
 exception ParserNotFound of string
