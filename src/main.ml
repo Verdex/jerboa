@@ -11,13 +11,32 @@ let to_eval (input:data) : string = "todo"
 
 (* find_lexer, find_parser, find_rule, match_pattern, construct *)
 
+exception LexerNotFound of string
+exception ParserNotFound of string
+exception RuleNotFound of string
+
 (* todo *)
 let parse (lexers : lexer list) 
           (parsers : parser list)
           (input : data list)
           (initial_parser : string) : data =
 
-          Atom( "todo", {start_index = 0; end_index = 0})
+    let find_lexer name = 
+        try List.find (function (Lexer(n, _)) -> n = name) lexers 
+        with Not_found -> raise (LexerNotFound name) 
+    in
+
+    let find_parser name = 
+        try List.find (function (Parser(n, _)) -> n = name) parsers
+        with Not_found -> raise (ParserNotFound name) 
+    in
+
+    let find_parse_rule rules name = 
+        try List.find (function (Rule(n, _) : parser_rule) -> n = name) rules
+        with Not_found -> raise (RuleNotFound name) 
+    in
+
+    Atom( "todo", {start_index = 0; end_index = 0})
 
 let l = Lexer("lexer", [ Rule("[a]", Atom "FoundA")
                        ; Rule("[b]", Fun("FoundB", [CaptureRef([0])]))
