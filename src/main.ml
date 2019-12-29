@@ -19,9 +19,9 @@ let parse (lexers : lexer list)
 
           Atom( "todo", {start_index = 0; end_index = 0})
 
-let l = Lexer("lexer", [Lex("[a]", Atom "FoundA")
-                       ; Lex("[b]", Fun("FoundB", [CaptureRef([0])]))
-                       ; Lex("[c]+", Fun("foundC", [CaptureRef([0])]))
+let l = Lexer("lexer", [ Rule("[a]", Atom "FoundA")
+                       ; Rule("[b]", Fun("FoundB", [CaptureRef([0])]))
+                       ; Rule("[c]+", Fun("foundC", [CaptureRef([0])]))
                        ] )
 
 

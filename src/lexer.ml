@@ -8,7 +8,7 @@ let lex (lexer : lexer) (input : string) : data list =
     let is_whitespace c = c = ' ' || c = '\t' || c = '\r' || c = '\n' in
 
     let gen_rules (Lexer (_, rules)) : (Str.regexp * constructor) list = 
-        List.map (fun (Lex(rule,cons)) -> (Str.regexp rule, cons)) rules
+        List.map (fun (Rule(rule,cons) : lexer_rule) -> (Str.regexp rule, cons)) rules
     in
 
     let rules = gen_rules lexer in
