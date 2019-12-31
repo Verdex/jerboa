@@ -37,11 +37,25 @@ let gen (lexers : lexer list) (parsers : parser list) =
     in
 
     let single_match (p : pattern) (input : data list) index : match_result =
+
+        let requires_data f = 
+            match index < List.length input with
+            | true -> f (List.nth input index)  
+            | false -> Failure
+        in
+
+        let atom_match : string -> data -> match_result = 
+            fun name data -> 
+                match data with
+                | Atom(n,_) as d when n = name -> SuccessWithData(d, index + 1)
+                | _ -> Failure
+        in
+
         match p with
-        | Atom(name) -> Failure 
+        | Atom(name) -> requires_data (atom_match name)
         | Fun(name, params) -> Failure 
         | Var(name) -> Failure 
-        | WildCard -> SuccessWithData( l_nth input index, index + 1) 
+        | WildCard -> SuccessWithData(l_nth input index, index + 1) 
         | RuleRef(rule_name) -> Failure 
         | ParserRef(lexer, parser) -> Failure 
         | Nothing -> Success index 
