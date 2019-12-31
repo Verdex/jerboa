@@ -18,6 +18,7 @@ type match_result =
     | Failure
     | Success of int
     | SuccessWithData of data * int
+    | SuccessWithNamedData of data * string * int
 
 let gen (lexers : lexer list) (parsers : parser list) =
 
@@ -40,7 +41,7 @@ let gen (lexers : lexer list) (parsers : parser list) =
 
         let requires_data f = 
             match index < List.length input with
-            | true -> f (List.nth input index)  
+            | true -> f (l_nth input index)  
             | false -> Failure
         in
 
@@ -54,8 +55,8 @@ let gen (lexers : lexer list) (parsers : parser list) =
         match p with
         | Atom(name) -> requires_data (atom_match name)
         | Fun(name, params) -> Failure 
-        | Var(name) -> Failure 
-        | WildCard -> SuccessWithData(l_nth input index, index + 1) 
+        | Var(name) -> requires_data (fun data -> SuccessWithNamedData(data, name, index + 1))
+        | WildCard -> requires_data (fun data -> SuccessWithData(data, index + 1))
         | RuleRef(rule_name) -> Failure 
         | ParserRef(lexer, parser) -> Failure 
         | Nothing -> Success index 
