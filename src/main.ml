@@ -1,6 +1,7 @@
 
 open Base
 open Construction
+open Util
 open Lexer
 open Debug (* todo *)
 
@@ -9,17 +10,16 @@ open Debug (* todo *)
 (* data_to_lexer, data_to_parser *)
 let to_eval (input:data) : string = "todo"
 
-(* match_pattern *)
-
 exception LexerNotFound of string
 exception ParserNotFound of string
 exception RuleNotFound of string
 
-(* todo *)
-let parse (lexers : lexer list) 
-          (parsers : parser list)
-          (input : data list)
-          (initial_parser : string) : data =
+type match_result = 
+    | Failure
+    | Success of int
+    | SuccessWithData of data * int
+
+let gen (lexers : lexer list) (parsers : parser list) =
 
     let find_lexer name = 
         try List.find (function (Lexer(n, _)) -> n = name) lexers 
@@ -35,6 +35,40 @@ let parse (lexers : lexer list)
         try List.find (function (Rule(n, _) : parser_rule) -> n = name) rules
         with Not_found -> raise (RuleNotFound name) 
     in
+
+    let single_match (p : pattern) (input : data list) index : match_result =
+        match p with
+        | Atom(name) -> Failure 
+        | Fun(name, params) -> Failure 
+        | Var(name) -> Failure 
+        | WildCard -> SuccessWithData( l_nth input index, index + 1) 
+        | RuleRef(rule_name) -> Failure 
+        | ParserRef(lexer, parser) -> Failure 
+        | Nothing -> Success index 
+    in
+
+    let match_pattern (ps : pattern list) 
+                      (c : constructor)
+                      (input : data list) 
+                      (index : int) : (data list * (string * data) list * int) option =
+        None
+    in
+
+    let try_cases (cases : parser_case) (input : data list) : data = 
+        Atom("TODO", {start_index=0; end_index=0})
+    in
+
+    (find_parser, try_cases)
+
+(* todo *)
+let parse (lexers : lexer list) 
+          (parsers : parser list)
+          (input : data list)
+          (initial_parser_name : string) : data =
+
+    let (find_parser, try_cases) = gen lexers parsers in
+
+    let initial_parser = find_parser initial_parser_name in 
 
     Atom( "todo", {start_index = 0; end_index = 0})
 
