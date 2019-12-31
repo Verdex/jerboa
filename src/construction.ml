@@ -1,16 +1,11 @@
 
 open Base
+open Util
 
 exception NoCapturesFoundError
 exception FailedRefLookupError
-exception NthIndexOutOfRangeError of int * int 
 exception TodoError of string
 
-let l_nth l i = 
-    if i >= List.length l then
-        raise (NthIndexOutOfRangeError(i, (List.length l)))
-    ;
-    List.nth l i
 
 let select_capture (ref_nums : int list) (captures : data list) : data =
         
