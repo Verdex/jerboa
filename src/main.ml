@@ -77,9 +77,7 @@ let gen (lexers : lexer list) (parsers : parser list) =
         | true -> None
         | false -> let targets = zip ps sub_list in m targets index [] []
 
-    in
-
-    let try_cases (cases : parser_case) (input : data list) : data option = 
+    and try_cases (cases : parser_case) (input : data list) : data option = 
         Some( Atom("TODO", {start_index=0; end_index=0}) )
     in
 
