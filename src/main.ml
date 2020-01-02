@@ -61,10 +61,11 @@ let gen (lexers : lexer list) (parsers : parser list) =
 
             | (Fun(_, _), _) :: _ -> None 
 
+            | (WildCard, d) :: r -> m r (i + 1) (d :: cap_list) env 
+
             | _ -> None
             (*
             | Var of string
-            | WildCard
             | RuleRef of string
             | ParserRef of string * string*)
         in
