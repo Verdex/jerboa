@@ -79,21 +79,17 @@ let gen (lexers : lexer list) (parsers : parser list) =
 
     and try_cases (cases : parser_case) (input : data list) : data option = 
         Some( Atom("TODO", {start_index=0; end_index=0}) )
+
+    and parse (input : data list)
+              (initial_parser_name : string) : data =
+
+        let initial_parser = find_parser initial_parser_name in 
+
+        Atom( "todo", {start_index = 0; end_index = 0})
     in
 
-    (find_parser, try_cases)
+    parse
 
-(* todo *)
-let parse (lexers : lexer list) 
-          (parsers : parser list)
-          (input : data list)
-          (initial_parser_name : string) : data =
-
-    let (find_parser, try_cases) = gen lexers parsers in
-
-    let initial_parser = find_parser initial_parser_name in 
-
-    Atom( "todo", {start_index = 0; end_index = 0})
 
 let l = Lexer("lexer", [ Rule("[a]", Atom "FoundA")
                        ; Rule("[b]", Fun("FoundB", [CaptureRef([0])]))
