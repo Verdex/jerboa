@@ -14,11 +14,6 @@ exception LexerNotFound of string
 exception ParserNotFound of string
 exception RuleNotFound of string
 
-type match_result = 
-    | Failure
-    | Success of int
-    | SuccessWithData of data * int
-    | SuccessWithNamedData of data * string * int
 
 let gen (lexers : lexer list) (parsers : parser list) =
 
@@ -37,36 +32,31 @@ let gen (lexers : lexer list) (parsers : parser list) =
         with Not_found -> raise (RuleNotFound name) 
     in
 
-    let single_match (p : pattern) (input : data list) index : match_result =
-
-        let requires_data f = 
-            match index < List.length input with
-            | true -> f (l_nth input index)  
-            | false -> Failure
-        in
-
-        let atom_match : string -> data -> match_result = 
-            fun name data -> 
-                match data with
-                | Atom(n,_) as d when n = name -> SuccessWithData(d, index + 1)
-                | _ -> Failure
-        in
-
-        match p with
-        | Atom(name) -> requires_data (atom_match name)
-        | Fun(name, params) -> Failure 
-        | Var(name) -> requires_data (fun data -> SuccessWithNamedData(data, name, index + 1))
-        | WildCard -> requires_data (fun data -> SuccessWithData(data, index + 1))
-        | RuleRef(rule_name) -> Failure 
-        | ParserRef(lexer, parser) -> Failure 
-        | Nothing -> Success index 
-    in
-
     let match_pattern (ps : pattern list) 
-                      (c : constructor)
                       (input : data list) 
                       (index : int) : (data list * (string * data) list * int) option =
-        None
+
+        let rec m (ts : (pattern * data) list) i cap_list env =
+            match ts with
+            | [] -> Some(List.rev cap_list, env, i) 
+            | (Atom(p_name), (Atom(d_name, _) as d)) :: r when p_name = d_name 
+                -> m r (i + 1) (d :: cap_list) env
+
+            | (Atom(_), _) :: _ -> None
+            | _ -> None
+            (*| Fun of string * pattern list
+            | Var of string
+            | WildCard
+            | RuleRef of string
+            | ParserRef of string * string*)
+        in
+
+        let sub_list = sub input index in
+
+        match List.length sub_list < List.length ps with
+        | true -> None
+        | false -> let targets = zip ps sub_list in m targets index [] []
+
     in
 
     let try_cases (cases : parser_case) (input : data list) : data = 
