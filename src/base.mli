@@ -19,7 +19,6 @@ type pattern =
     | WildCard
     | RuleRef of string
     | ParserRef of string * string
-    | Nothing
 
 type lexer_rule = Rule of string * constructor
 
