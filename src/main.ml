@@ -13,13 +13,18 @@ let to_eval (input:data) : string = "todo"
 exception LexerNotFound of string
 exception ParserNotFound of string
 exception RuleNotFound of string
+exception EnvNameCollision of string list
 
-(* 
-    TODO : go ahead and check that there are no variable collisions ... environments will 
-           probably be small enough that it won't be a problem
-*)
 let env_merge (e1 : (string * data) list) (e2 : (string * data) list) : (string * data) list =
-    []
+    let open List in
+    let collisions = map (fun (n1, _) -> filter (fun (n2, _) -> n1 = n2) e2) e1
+                   |> concat 
+                   |> map (fun (n, _) -> n) in
+
+    if length collisions <> 0 then
+        raise (EnvNameCollision collisions)
+    ;
+    append e1 e2
 
 let gen (lexers : lexer list) (parsers : parser list) =
 
