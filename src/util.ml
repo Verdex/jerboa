@@ -17,3 +17,12 @@ let zip (l1 : 'a list) (l2 : 'b list) : ('a * 'b) list =
 
     in List.rev (h l1 l2 [])
 
+let sub (list : 'a list) (index : int) : 'a list = 
+    let rec h ll i =
+        match (ll, i) with
+        | ([], _) -> []
+        | (l, 0) -> l
+        | (_::r, n) -> h r (n - 1)
+
+    in h list index
+
