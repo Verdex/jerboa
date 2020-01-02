@@ -14,6 +14,12 @@ exception LexerNotFound of string
 exception ParserNotFound of string
 exception RuleNotFound of string
 
+(* 
+    TODO : go ahead and check that there are no variable collisions ... environments will 
+           probably be small enough that it won't be a problem
+*)
+let env_merge (e1 : (string * data) list) (e2 : (string * data) list) : (string * data) list =
+    []
 
 let gen (lexers : lexer list) (parsers : parser list) =
 
@@ -32,19 +38,31 @@ let gen (lexers : lexer list) (parsers : parser list) =
         with Not_found -> raise (RuleNotFound name) 
     in
 
-    let match_pattern (ps : pattern list) 
+    let rec match_pattern (ps : pattern list) 
                       (input : data list) 
                       (index : int) : (data list * (string * data) list * int) option =
 
         let rec m (ts : (pattern * data) list) i cap_list env =
             match ts with
             | [] -> Some(List.rev cap_list, env, i) 
+
             | (Atom(p_name), (Atom(d_name, _) as d)) :: r when p_name = d_name 
                 -> m r (i + 1) (d :: cap_list) env
 
             | (Atom(_), _) :: _ -> None
+
+            | (Fun(p_name, p_params), Fun(d_name, d_params, meta)) :: r when p_name = d_name
+                -> (
+                   match match_pattern p_params d_params 0 with
+                   | None -> None
+                   | Some(sub_cap, sub_env, _) 
+                     -> m r (i + 1) (Fun(d_name, sub_cap, meta) :: cap_list) (env_merge sub_env env)
+                   )
+
+            | (Fun(_, _), _) :: _ -> None 
+
             | _ -> None
-            (*| Fun of string * pattern list
+            (*
             | Var of string
             | WildCard
             | RuleRef of string
