@@ -63,9 +63,10 @@ let gen (lexers : lexer list) (parsers : parser list) =
 
             | (WildCard, d) :: r -> m r (i + 1) (d :: cap_list) env 
 
+            | (Var name, d) :: r -> m r (i + 1) (d :: cap_list) (env_merge [(name, d)] env)
+
             | _ -> None
             (*
-            | Var of string
             | RuleRef of string
             | ParserRef of string * string*)
         in
@@ -78,8 +79,8 @@ let gen (lexers : lexer list) (parsers : parser list) =
 
     in
 
-    let try_cases (cases : parser_case) (input : data list) : data = 
-        Atom("TODO", {start_index=0; end_index=0})
+    let try_cases (cases : parser_case) (input : data list) : data option = 
+        Some( Atom("TODO", {start_index=0; end_index=0}) )
     in
 
     (find_parser, try_cases)
