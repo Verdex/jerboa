@@ -43,9 +43,10 @@ let gen (lexers : lexer list) (parsers : parser list) =
         with Not_found -> raise (RuleNotFound name) 
     in
 
-    let rec match_pattern (ps : pattern list) 
-                      (input : data list) 
-                      (index : int) : (data list * (string * data) list * int) option =
+    let rec match_pattern (rules : parser_rule list)
+                          (ps : pattern list) 
+                          (input : data list) 
+                          (index : int) : (data list * (string * data) list * int) option =
 
         let rec m (ts : (pattern * data) list) i cap_list env =
             match ts with
@@ -58,7 +59,7 @@ let gen (lexers : lexer list) (parsers : parser list) =
 
             | (Fun(p_name, p_params), Fun(d_name, d_params, meta)) :: r when p_name = d_name
                 -> (
-                   match match_pattern p_params d_params 0 with
+                   match match_pattern rules p_params d_params 0 with
                    | None -> None
                    | Some(sub_cap, sub_env, _) 
                      -> m r (i + 1) (Fun(d_name, sub_cap, meta) :: cap_list) (env_merge sub_env env)
@@ -70,9 +71,11 @@ let gen (lexers : lexer list) (parsers : parser list) =
 
             | (Var name, d) :: r -> m r (i + 1) (d :: cap_list) (env_merge [(name, d)] env)
 
+            (*| (RuleRef name, d) :: r -> *)
+                
+    
             | _ -> None
             (*
-            | RuleRef of string
             | ParserRef of string * string*)
         in
 
