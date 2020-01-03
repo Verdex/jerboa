@@ -100,9 +100,12 @@ let gen (lexers : lexer list) (parsers : parser list) =
     and parse (input : data list)
               (initial_parser_name : string) : data =
 
-        let initial_parser = find_parser initial_parser_name in 
+        let Parser(_, rules) = find_parser initial_parser_name in 
+        let Rule(_, cases) = find_parse_rule rules "main" in
+        match try_cases cases input 0 with
+        | Some( output, final_index ) -> Atom( "todo", {start_index = 0; end_index = 0}) (* TODO : check final_index is good and return output *)
+        | None -> Atom( "todo", {start_index = 0; end_index = 0}) (* TODO : throw exception? *)
 
-        Atom( "todo", {start_index = 0; end_index = 0})
     in
 
     parse
