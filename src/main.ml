@@ -71,9 +71,14 @@ let gen (lexers : lexer list) (parsers : parser list) =
 
             | (Var name, d) :: r -> m r (i + 1) (d :: cap_list) (env_merge [(name, d)] env)
 
-            (*| (RuleRef name, d) :: r -> *)
-                
-    
+            | (RuleRef name, d) :: r -> 
+                let Rule(_, cases) = find_parse_rule rules name in  
+                (
+                match try_cases cases input i with
+                | Some( d, new_index ) -> m r new_index (d :: cap_list) env 
+                | None -> None
+                )
+
             | _ -> None
             (*
             | ParserRef of string * string*)
@@ -85,8 +90,8 @@ let gen (lexers : lexer list) (parsers : parser list) =
         | true -> None
         | false -> let targets = zip ps sub_list in m targets index [] []
 
-    and try_cases (cases : parser_case) (input : data list) : data option = 
-        Some( Atom("TODO", {start_index=0; end_index=0}) )
+    and try_cases (cases : parser_case list) (input : data list) index : (data * int) option = 
+        Some( Atom("TODO", {start_index=0; end_index=0}), 0 )
 
     and parse (input : data list)
               (initial_parser_name : string) : data =
