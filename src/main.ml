@@ -81,9 +81,8 @@ let gen (lexers : lexer list) (parsers : parser list) =
 
             | (ParserRef(lexer_name, parser_name), String(value, meta)) :: r ->
                 let lexer = find_lexer lexer_name in
-                let parser = find_parser parser_name in
                 let tokens = lex lexer value in
-                let output = parse tokens "main" in
+                let output = parse tokens parser_name in
                 m r (i + 1) (output :: cap_list) env
 
             | (ParserRef(lexer_name, parser_name), _) :: r -> None
