@@ -79,9 +79,14 @@ let gen (lexers : lexer list) (parsers : parser list) =
                 | None -> None
                 )
 
-            | _ -> None
-            (*
-            | ParserRef of string * string*)
+            | (ParserRef(lexer_name, parser_name), String(value, meta)) :: r ->
+                let lexer = find_lexer lexer_name in
+                let parser = find_parser parser_name in
+                let tokens = lex lexer value in
+                let output = parse tokens "main" in
+                m r (i + 1) (output :: cap_list) env
+
+            | (ParserRef(lexer_name, parser_name), _) :: r -> None
         in
 
         let sub_list = sub input index in
