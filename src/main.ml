@@ -74,7 +74,7 @@ let gen (lexers : lexer list) (parsers : parser list) =
             | (RuleRef name, d) :: r -> 
                 let Rule(_, cases) = find_parse_rule rules name in  
                 (
-                match try_cases cases input i with
+                match try_cases rules cases input i with
                 | Some( d, new_index ) -> m r new_index (d :: cap_list) env 
                 | None -> None
                 )
@@ -98,15 +98,30 @@ let gen (lexers : lexer list) (parsers : parser list) =
         | true -> None
         | false -> let targets = zip ps sub_list in m targets index [] []
 
-    and try_cases (cases : parser_case list) (input : data list) index : (data * int) option = 
-        Some( Atom("TODO", {start_index=0; end_index=0}), 0 )
+    and try_cases (rules : parser_rule list) 
+                  (cases : parser_case list) 
+                  (input : data list) 
+                  (index : int ) : (data * int) option = 
+
+        let rec h cs i = 
+            match cs with
+            | [] -> None
+            | Case(pattern, constructor) :: r -> 
+                (
+                match match_pattern rules pattern input i with
+                | None -> h r i 
+                | Some( cap_list, env, new_index ) -> Some( construct constructor cap_list env, new_index )
+                )
+
+        in
+        h cases index
 
     and parse (input : data list)
               (initial_parser_name : string) : data option * int =
 
         let Parser(_, rules) = find_parser initial_parser_name in 
         let Rule(_, cases) = find_parse_rule rules "main" in
-        match try_cases cases input 0 with
+        match try_cases rules cases input 0 with
         | Some( output, final_index ) -> (Some output, final_index) 
         | None -> (None, 0) 
 
