@@ -82,8 +82,12 @@ let gen (lexers : lexer list) (parsers : parser list) =
             | (ParserRef(lexer_name, parser_name), String(value, meta)) :: r ->
                 let lexer = find_lexer lexer_name in
                 let tokens = lex lexer value in
-                let output = parse tokens parser_name in
-                m r (i + 1) (output :: cap_list) env
+                (
+                match parse tokens parser_name with
+                | (Some data, final_index) when (final_index - 1) = String.length value 
+                    -> m r (i + 1) (data :: cap_list) env
+                | _ -> None
+                )
 
             | (ParserRef(lexer_name, parser_name), _) :: r -> None
         in
@@ -98,13 +102,13 @@ let gen (lexers : lexer list) (parsers : parser list) =
         Some( Atom("TODO", {start_index=0; end_index=0}), 0 )
 
     and parse (input : data list)
-              (initial_parser_name : string) : data =
+              (initial_parser_name : string) : data option * int =
 
         let Parser(_, rules) = find_parser initial_parser_name in 
         let Rule(_, cases) = find_parse_rule rules "main" in
         match try_cases cases input 0 with
-        | Some( output, final_index ) -> Atom( "todo", {start_index = 0; end_index = 0}) (* TODO : check final_index is good and return output *)
-        | None -> Atom( "todo", {start_index = 0; end_index = 0}) (* TODO : throw exception? *)
+        | Some( output, final_index ) -> (Some output, final_index) 
+        | None -> (None, 0) 
 
     in
 
