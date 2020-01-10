@@ -4,8 +4,11 @@ open Util
 
 exception NoCapturesFoundError
 exception FailedRefLookupError
-exception TodoError of string
+exception VariableLookupError of string
 
+let var_lookup (env : (string * data) list) (var_name : string) : data =
+    try let (_, data) = List.find (fun (name, _) -> name = var_name) env in data
+    with _ -> raise (VariableLookupError var_name)
 
 let select_capture (ref_nums : int list) (captures : data list) : data =
         
@@ -46,5 +49,5 @@ let rec construct (c : constructor) (captures: data list) (var_env : (string * d
                               , meta_value 
                               )
     | CaptureRef(ref_nums) -> select_capture ref_nums captures  
-    | Var(name) -> raise (TodoError "need to implement construct variable selection")
+    | Var(name) -> var_lookup var_env name 
 
