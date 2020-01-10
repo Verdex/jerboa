@@ -75,8 +75,8 @@ let gen (lexers : lexer list) (parsers : parser list) =
                 let Rule(_, cases) = find_parse_rule rules name in  
                 (
                 match try_cases rules cases input i with
-                | Some( d, new_index ) -> m r new_index (d :: cap_list) env 
-                | None -> None
+                | (Some d, new_index) -> m r new_index (d :: cap_list) env 
+                | (None, new_index) -> None
                 )
 
             | (ParserRef(lexer_name, parser_name), String(value, meta)) :: r ->
@@ -101,16 +101,16 @@ let gen (lexers : lexer list) (parsers : parser list) =
     and try_cases (rules : parser_rule list) 
                   (cases : parser_case list) 
                   (input : data list) 
-                  (index : int ) : (data * int) option = 
+                  (index : int ) : data option * int = 
 
         let rec h cs i = 
             match cs with
-            | [] -> None
+            | [] -> (None, i)
             | Case(pattern, constructor) :: r -> 
                 (
                 match match_pattern rules pattern input i with
                 | None -> h r i 
-                | Some( cap_list, env, new_index ) -> Some( construct constructor cap_list env, new_index )
+                | Some( cap_list, env, new_index ) -> (Some(construct constructor cap_list env), new_index)
                 )
 
         in
@@ -121,10 +121,7 @@ let gen (lexers : lexer list) (parsers : parser list) =
 
         let Parser(_, rules) = find_parser initial_parser_name in 
         let Rule(_, cases) = find_parse_rule rules "main" in
-        match try_cases rules cases input 0 with
-        | Some( output, final_index ) -> (Some output, final_index) 
-        | None -> (None, 0) 
-
+        try_cases rules cases input 0 
     in
 
     parse
