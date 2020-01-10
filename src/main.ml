@@ -46,26 +46,29 @@ let gen (lexers : lexer list) (parsers : parser list) =
     let rec match_pattern (rules : parser_rule list)
                           (ps : pattern list) 
                           (input : data list) 
-                          (index : int) : (data list * (string * data) list * int) option =
+                          (index : int) : (data list * (string * data) list) option * int =
 
-        let rec m (ts : (pattern * data) list) i cap_list env =
+        let rec m (ts : (pattern * data) list) 
+                  (i : int)
+                  (cap_list : data list)
+                  (env : (string * data) list) : (data list * (string * data) list) option * int =
             match ts with
-            | [] -> Some(List.rev cap_list, env, i) 
+            | [] -> (Some(List.rev cap_list, env), i)
 
             | (Atom(p_name), (Atom(d_name, _) as d)) :: r when p_name = d_name 
                 -> m r (i + 1) (d :: cap_list) env
 
-            | (Atom(_), _) :: _ -> None
+            | (Atom(_), _) :: _ -> (None, i) 
 
             | (Fun(p_name, p_params), Fun(d_name, d_params, meta)) :: r when p_name = d_name
                 -> (
                    match match_pattern rules p_params d_params 0 with
-                   | None -> None
-                   | Some(sub_cap, sub_env, _) 
+                   | (Some(sub_cap, sub_env), final_index) when (final_index + 1) = List.length d_params
                      -> m r (i + 1) (Fun(d_name, sub_cap, meta) :: cap_list) (env_merge sub_env env)
+                   | _ -> (None, i)
                    )
 
-            | (Fun(_, _), _) :: _ -> None 
+            | (Fun(_, _), _) :: _ -> (None, i)
 
             | (WildCard, d) :: r -> m r (i + 1) (d :: cap_list) env 
 
@@ -76,7 +79,7 @@ let gen (lexers : lexer list) (parsers : parser list) =
                 (
                 match try_cases rules cases input i with
                 | (Some d, new_index) -> m r new_index (d :: cap_list) env 
-                | (None, new_index) -> None
+                | (None, new_index) -> (None, new_index)
                 )
 
             | (ParserRef(lexer_name, parser_name), String(value, meta)) :: r ->
@@ -84,18 +87,18 @@ let gen (lexers : lexer list) (parsers : parser list) =
                 let tokens = lex lexer value in
                 (
                 match parse tokens parser_name with
-                | (Some data, final_index) when (final_index - 1) = String.length value 
+                | (Some data, final_index) when (final_index + 1) = String.length value 
                     -> m r (i + 1) (data :: cap_list) env
-                | _ -> None
+                | _ -> (None, i)
                 )
 
-            | (ParserRef(lexer_name, parser_name), _) :: r -> None
+            | (ParserRef(lexer_name, parser_name), _) :: r -> (None, i)
         in
 
         let sub_list = sub input index in
 
         match List.length sub_list < List.length ps with
-        | true -> None
+        | true -> (None, index)
         | false -> let targets = zip ps sub_list in m targets index [] []
 
     and try_cases (rules : parser_rule list) 
@@ -109,8 +112,8 @@ let gen (lexers : lexer list) (parsers : parser list) =
             | Case(pattern, constructor) :: r -> 
                 (
                 match match_pattern rules pattern input i with
-                | None -> h r i 
-                | Some( cap_list, env, new_index ) -> (Some(construct constructor cap_list env), new_index)
+                | (None, _) -> h r i 
+                | (Some(cap_list, env), new_index) -> (Some(construct constructor cap_list env), new_index)
                 )
 
         in
