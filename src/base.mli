@@ -18,6 +18,7 @@ type pattern =
     | Var of string
     | WildCard
     | RuleRef of string
+    (* TODO add ParserRef option that ignores whitespace *)
     | ParserRef of string * string
 
 type lexer_rule = Rule of string * constructor

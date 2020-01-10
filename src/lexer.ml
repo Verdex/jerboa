@@ -5,6 +5,7 @@ open Construction
 exception RuleNotFoundError of int
 
 let lex (lexer : lexer) (input : string) : data list = 
+    (* TODO need to determine a non-whitespace removing option for strings etc *)
     let is_whitespace c = c = ' ' || c = '\t' || c = '\r' || c = '\n' in
 
     let gen_rules (Lexer (_, rules)) : (Str.regexp * constructor) list = 
