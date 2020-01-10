@@ -9,6 +9,18 @@ all: rules.cmx main.cmx debug.cmx
 						parser.cmx \
 						main.cmx
 
+test: test.cmx debug.cmx 
+	ocamlopt -o test str.cmxa \
+						debug.cmx \
+						util.cmx \
+						construction.cmx \
+						lexer.cmx \
+						parser.cmx \
+						test.cmx
+
+test.cmx: base.cmi debug.cmx construction.cmx lexer.cmx parser.cmx 
+	ocamlopt -c test.ml
+
 main.cmx: base.cmi rules.cmx debug.cmx construction.cmx lexer.cmx parser.cmx 
 	ocamlopt -c main.ml
 
@@ -45,3 +57,4 @@ clean:
 	rm -rf *.cmo
 	rm -rf *.o
 	rm -rf jerboa
+	rm -rf test
