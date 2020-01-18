@@ -11,6 +11,7 @@ type constructor =
     | Fun of string * constructor list
     | CaptureRef of int list (* %1 , %1.%2 , etc  *)
     | Var of string 
+    | Nothing
 
 type pattern =
     | Atom of string
@@ -18,7 +19,6 @@ type pattern =
     | Var of string
     | WildCard
     | RuleRef of string
-    (* TODO add ParserRef option that ignores whitespace *)
     | ParserRef of string * string
 
 type lexer_rule = Rule of string * constructor
