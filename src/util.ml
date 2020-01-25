@@ -26,14 +26,15 @@ let sub (list : 'a list) (index : int) : 'a list =
 
     in h list index
 
-let some_map (f : 'a -> 'b) (l : 'a option list) : 'b list =
+let maybe_map (f : 'a -> 'b option) (l : 'a list) : 'b list =
     let rec h i a =
         match i with
         | [] -> List.rev a
-        | Some v :: r -> h r (f v :: a)
-        | None :: r -> h r a
+        | v :: r -> (match f v with
+                    | Some fv -> h r (fv :: a)
+                    | None -> h r a
+                    )
     in
 
     h l []
-
 

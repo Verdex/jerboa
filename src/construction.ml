@@ -32,19 +32,6 @@ let select_capture (ref_nums : int list) (captures : data list) : data =
 
 let rec construct (c : constructor) (captures: data list) (var_env : (string * data) list) : data option = 
 
-    let combine_params (f : 'a -> 'b option) (l : 'a list) : 'b list =
-        let rec h i a =
-            match i with
-            | [] -> List.rev a
-            | v :: r -> (match f v with
-                        | Some fv -> h r (fv :: a)
-                        | None -> h r a
-                        )
-        in
-
-        h l []
-    in
-       
     let meta_index captures = 
         let pull_meta : data -> meta = function Atom(_, m) -> m | Fun(_, _, m) -> m | String(_, m) -> m in
         
@@ -56,7 +43,7 @@ let rec construct (c : constructor) (captures: data list) (var_env : (string * d
     match c with
     | Atom(name) -> Some( Atom(name, meta_index captures) )
     | Fun(name, params) -> Some( Fun( name 
-                              , combine_params (fun param -> construct param captures var_env) params
+                              , maybe_map (fun param -> construct param captures var_env) params
                               , meta_index captures 
                               ) )
     | CaptureRef(ref_nums) -> Some( select_capture ref_nums captures )

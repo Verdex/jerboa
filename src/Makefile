@@ -39,7 +39,7 @@ construction.cmx: base.cmi util.cmx
 	ocamlc -c construction.mli
 	ocamlopt -c construction.ml
 
-lexer.cmx: base.cmi construction.cmx
+lexer.cmx: base.cmi util.cmi construction.cmx
 	ocamlc -c lexer.mli
 	ocamlopt -c lexer.ml
 

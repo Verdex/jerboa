@@ -1,5 +1,6 @@
 
 open Base
+open Util
 open Construction
 
 exception RuleNotFoundError of int
@@ -37,5 +38,5 @@ let lex (lexer : lexer) (input : string) : data list =
             | Some( (value, cons) ) -> output := (value, cons, !index, new_index) :: !output ; index := new_index
             | None -> raise (RuleNotFoundError !index)
     done 
-    ; List.map (fun (v, c, s, e) -> construct c [String(v, {start_index = s; end_index = e - 1})] []) (List.rev !output)
+    ; maybe_map (fun (v, c, s, e) -> construct c [String(v, {start_index = s; end_index = e - 1})] []) (List.rev !output)
 
