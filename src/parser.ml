@@ -98,7 +98,7 @@ let gen (lexers : lexer list) (parsers : parser list) =
     and try_cases (rules : parser_rule list) 
                   (cases : parser_case list) 
                   (input : data list) 
-                  (index : int ) : data option * int = 
+                  (index : int ) : parse_result = 
 
         let rec h cs i = 
             match cs with
@@ -107,14 +107,14 @@ let gen (lexers : lexer list) (parsers : parser list) =
                 (
                 match match_pattern rules pattern input i with
                 | (None, _) -> h r i 
-                | (Some(cap_list, env), new_index) -> (Some(construct constructor cap_list env), new_index)
+                | (Some(cap_list, env), new_index) -> (construct constructor cap_list env, new_index) 
                 )
 
-        in
+        i
         h cases index
 
     and parse (input : data list)
-              (initial_parser_name : string) : data option * int =
+              (initial_parser_name : string) : parse_result =
 
         let Parser(_, rules) = find_parser initial_parser_name in 
         let Rule(_, cases) = find_parse_rule rules "main" in
@@ -126,7 +126,7 @@ let gen (lexers : lexer list) (parsers : parser list) =
 let parse (lexers : lexer list) 
           (parsers : parser list)
           (input : data list)
-          (initial_parser_name : string) : data option * int =
+          (initial_parser_name : string) : parse_result =
 
     let parse_helper = gen lexers parsers in
     parse_helper input initial_parser_name

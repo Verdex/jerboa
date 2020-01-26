@@ -31,3 +31,7 @@ type parser_rule = Rule of string * parser_case list
 
 type parser = Parser of string * parser_rule list
 
+type parse_result = 
+    | Fail of int
+    | Success of data option * int
+
