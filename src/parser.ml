@@ -72,8 +72,9 @@ let gen (lexers : lexer list) (parsers : parser list) =
                 let Rule(_, cases) = find_parse_rule rules name in  
                 (
                 match try_cases rules cases input i with
-                | (Some d, new_index) -> m r new_index (d :: cap_list) env 
-                | (None, new_index) -> (None, new_index)
+                | Success( Some d, new_index ) -> m r new_index (d :: cap_list) env 
+                | Success( None, new_index ) -> m r new_index cap_list env
+                | Fail new_index -> (None, new_index)
                 )
 
             | (ParserRef(lexer_name, parser_name), String(value, meta)) :: r ->
@@ -81,8 +82,10 @@ let gen (lexers : lexer list) (parsers : parser list) =
                 let tokens = lex lexer value in
                 (
                 match parse tokens parser_name with
-                | (Some data, final_index) when (final_index + 1) = String.length value 
+                | Success(Some data, final_index) when (final_index + 1) = String.length value 
                     -> m r (i + 1) (data :: cap_list) env
+                | Success(None, final_index) when (final_index + 1) = String.length value 
+                    -> m r (i + 1) cap_list env
                 | _ -> (None, i)
                 )
 
@@ -102,15 +105,15 @@ let gen (lexers : lexer list) (parsers : parser list) =
 
         let rec h cs i = 
             match cs with
-            | [] -> (None, i)
+            | [] -> Fail i
             | Case(pattern, constructor) :: r -> 
                 (
                 match match_pattern rules pattern input i with
                 | (None, _) -> h r i 
-                | (Some(cap_list, env), new_index) -> (construct constructor cap_list env, new_index) 
+                | (Some(cap_list, env), new_index) -> 
+                    Success( construct constructor cap_list env, new_index )
                 )
-
-        i
+        in
         h cases index
 
     and parse (input : data list)
