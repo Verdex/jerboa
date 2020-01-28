@@ -6,8 +6,6 @@ open Construction
 exception RuleNotFoundError of int
 
 let lex (lexer : lexer) (input : string) : data list = 
-    (* TODO need to determine a non-whitespace removing option for strings etc *)
-    let is_whitespace c = c = ' ' || c = '\t' || c = '\r' || c = '\n' in
 
     let gen_rules (Lexer (_, rules)) : (Str.regexp * constructor) list = 
         List.map (fun (Rule(rule,cons) : lexer_rule) -> (Str.regexp rule, cons)) rules
@@ -30,13 +28,10 @@ let lex (lexer : lexer) (input : string) : data list =
     let index = ref 0 in
     let output = ref [] in
     while !index < String.length input do
-        if is_whitespace input.[!index] then
-            index := !index + 1
-        else
-            let (result, new_index) = try_rules input !index in 
-            match result with
-            | Some( (value, cons) ) -> output := (value, cons, !index, new_index) :: !output ; index := new_index
-            | None -> raise (RuleNotFoundError !index)
+        let (result, new_index) = try_rules input !index in 
+        match result with
+        | Some( (value, cons) ) -> output := (value, cons, !index, new_index) :: !output ; index := new_index
+        | None -> raise (RuleNotFoundError !index)
     done 
     ; maybe_map (fun (v, c, s, e) -> construct c [String(v, {start_index = s; end_index = e - 1})] []) (List.rev !output)
 
