@@ -70,3 +70,39 @@ test "lexer with single capture rule" (fun _ ->
                    ; String("a", meta 2 2)
                    ] "should process \"aaa\"" 
 )
+
+;;
+
+test "lexer with two atom rules" (fun _ ->
+    let lexer : lexer = Lexer( "ab", [Rule( "[a]", CaptureRef [0] )
+                                     ;Rule( "[b]", CaptureRef [0] )
+                                     ] ) in
+
+    let d1 = lex lexer "aaa" in
+    let d2 = lex lexer "bbb" in
+    let d3 = lex lexer "bab" in
+    let d4 = lex lexer "" in
+
+    expect_eq d1 [ String("a", meta 0 0)
+                 ; String("a", meta 1 1)
+                 ; String("a", meta 2 2)
+                 ] "should process \"aaa\"" 
+
+    ;
+
+    expect_eq d2 [ String("b", meta 0 0)
+                 ; String("b", meta 1 1)
+                 ; String("b", meta 2 2)
+                 ] "should process \"bbb\"" 
+
+    ;
+
+    expect_eq d3 [ String("b", meta 0 0)
+                 ; String("a", meta 1 1)
+                 ; String("b", meta 2 2)
+                 ] "should process \"bab\"" 
+
+    ;
+
+    expect_eq d4 [] "should process \"\"" 
+)
