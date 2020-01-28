@@ -9,16 +9,20 @@ all: rules.cmx main.cmx debug.cmx
 						parser.cmx \
 						main.cmx
 
-test: test.cmx debug.cmx 
-	ocamlopt -o test str.cmxa \
-						debug.cmx \
-						util.cmx \
-						construction.cmx \
-						lexer.cmx \
-						parser.cmx \
-						test.cmx
+test: test_lexer.cmx 
+	ocamlopt -o test_lexer  str.cmxa \
+							util.cmx \
+							construction.cmx \
+							lexer.cmx \
+							test.cmx \
+							test_lexer.cmx
+	./test_lexer
 
-test.cmx: base.cmi debug.cmx construction.cmx lexer.cmx parser.cmx 
+test_lexer.cmx: base.cmi test.cmx lexer.cmx
+	ocamlopt -c test_lexer.ml
+
+test.cmx: 
+	ocamlc -c test.mli
 	ocamlopt -c test.ml
 
 main.cmx: base.cmi rules.cmx debug.cmx construction.cmx lexer.cmx parser.cmx 
@@ -39,7 +43,7 @@ construction.cmx: base.cmi util.cmx
 	ocamlc -c construction.mli
 	ocamlopt -c construction.ml
 
-lexer.cmx: base.cmi util.cmi construction.cmx
+lexer.cmx: base.cmi util.cmx construction.cmx
 	ocamlc -c lexer.mli
 	ocamlopt -c lexer.ml
 
@@ -58,3 +62,4 @@ clean:
 	rm -rf *.o
 	rm -rf jerboa
 	rm -rf test
+	rm -rf test_lexer
