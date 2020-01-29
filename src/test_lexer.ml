@@ -2,6 +2,7 @@
 open Base
 open Lexer
 open Test
+open Debug
 
 ;; 
 
@@ -86,4 +87,20 @@ test "lexer with two atom rules" (fun _ ->
     ;
 
     expect_eq d4 [] "should process \"\"" 
+)
+
+;;
+
+test "lexer with strings" (fun _ ->
+    let lexer : lexer = Lexer( "ab", [Rule( "[\n\r\t ]", Nothing )
+                                     ;Rule( "[\"][^\"]*[\"]", CaptureRef [0] )
+                                     ;Rule( "[+]", Atom "plus" )
+                                     ] ) in
+
+    let data = lex lexer "\"first \" + \" second \"" in
+
+    expect_eq data [ String( "\"first \"", meta 0 7 )
+                   ; Atom( "plus", meta 9 9 )
+                   ; String( "\" second \"", meta 11 20 )
+                   ] "should handle strings"
 )

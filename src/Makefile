@@ -11,6 +11,7 @@ all: rules.cmx main.cmx debug.cmx
 
 test: test_lexer.cmx 
 	ocamlopt -o test_lexer  str.cmxa \
+							debug.cmx \
 							util.cmx \
 							construction.cmx \
 							lexer.cmx \
@@ -18,7 +19,7 @@ test: test_lexer.cmx
 							test_lexer.cmx
 	./test_lexer
 
-test_lexer.cmx: base.cmi test.cmx lexer.cmx
+test_lexer.cmx: base.cmi debug.cmx test.cmx lexer.cmx
 	ocamlopt -c test_lexer.ml
 
 test.cmx: 
