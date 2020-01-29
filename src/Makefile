@@ -9,7 +9,7 @@ all: rules.cmx main.cmx debug.cmx
 						parser.cmx \
 						main.cmx
 
-test: test_lexer.cmx 
+test: test_lexer.cmx test_parser.cmx
 	ocamlopt -o test_lexer  str.cmxa \
 							debug.cmx \
 							util.cmx \
@@ -17,7 +17,20 @@ test: test_lexer.cmx
 							lexer.cmx \
 							test.cmx \
 							test_lexer.cmx
-	./test_lexer
+	./test_lexer 
+	ocamlopt -o test_parser str.cmxa \
+							debug.cmx \
+							util.cmx \
+							construction.cmx \
+							lexer.cmx \
+							parser.cmx \
+							test.cmx \
+							test_parser.cmx
+	./test_parser
+
+
+test_parser.cmx: base.cmi debug.cmx test.cmx parser.cmx
+	ocamlopt -c test_parser.ml
 
 test_lexer.cmx: base.cmi debug.cmx test.cmx lexer.cmx
 	ocamlopt -c test_lexer.ml
@@ -64,3 +77,4 @@ clean:
 	rm -rf jerboa
 	rm -rf test
 	rm -rf test_lexer
+	rm -rf test_parser
