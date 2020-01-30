@@ -19,6 +19,20 @@ test "parser with single rule single case and single atom pattern" (fun _ ->
     expect_eq data (Atom( "output", meta 0 0 )) "should produce atom output"
 )
 
+;; 
+
+test "parser with single rule single case and double atom pattern" (fun _ ->
+    let lexer : lexer = Lexer( "lex", [Rule( "[a]", Atom "A" )] ) in
+    let parser : parser = Parser( "parse", [Rule( "main", [Case( [Atom "A"; Atom "A"], Atom( "output" ) )] ) ] ) in
+
+    let tokens = lex lexer "aa" in
+    let output = parse [lexer] [parser] tokens "parse" in
+
+    let Success(Some(data), _) = output in
+
+    expect_eq data (Atom( "output", meta 0 1 )) "should produce atom output"
+)
+
 (* 
     wild card
     variable
@@ -36,4 +50,5 @@ test "parser with single rule single case and single atom pattern" (fun _ ->
     multiple cases
     nothing pattern match
     nothing construction
+    final index is correct
 *)
