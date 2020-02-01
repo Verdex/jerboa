@@ -55,9 +55,9 @@ let gen (lexers : lexer list) (parsers : parser list) =
             | (Atom(_), _) :: _ -> (None, i) 
 
             | (Fun(p_name, p_params), Fun(d_name, d_params, meta)) :: r when p_name = d_name
-                -> (
+                -> ( 
                    match match_pattern rules p_params d_params 0 with
-                   | (Some(sub_cap, sub_env), final_index) when (final_index + 1) = List.length d_params
+                   | (Some(sub_cap, sub_env), final_index) when final_index = List.length d_params
                      -> m r (i + 1) (Fun(d_name, sub_cap, meta) :: cap_list) (env_merge sub_env env)
                    | _ -> (None, i)
                    )
