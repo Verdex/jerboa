@@ -130,18 +130,45 @@ test "parser with single rule single case and single function(atom) pattern" (fu
 
     expect_eq d (Atom( "output", meta 0 0)) "should produce atom output from input"
 )
+
+;;
+
+test "parser with single rule single case and single function(atom, atom) pattern" (fun _ ->
+    let lexer : lexer = Lexer( "lex", [Rule( "[a]", Fun( "fun", [Atom "A"; Atom "B"]) )]) in
+    let parser : parser = Parser( "parse", [Rule( "main", [Case( [Fun( "fun", [Atom "A"; Atom "B"] )], Atom "output")] )]) in 
+
+    let t = lex lexer "a" in
+    let o = parse [lexer] [parser] t "parse" in
+    let d = unwrap o in
+
+    expect_eq d (Atom( "output", meta 0 0)) "should produce atom output from input"
+)
+
+;;
+
+test "parser with single rule single case and single function(atom, function(atom)) pattern" (fun _ ->
+    let lexer : lexer = Lexer( "lex", [Rule( "[a]", Fun( "fun", [Atom "A"; Fun( "B", [Atom "C"])]) )]) in
+    let parser : parser = Parser( "parse", [Rule( "main", [Case( [Fun( "fun", [Atom "A"
+                                                                              ;Fun( "B", [Atom "C"] )
+                                                                              ] )], Atom "output")] )]) in 
+
+    let t = lex lexer "a" in
+    let o = parse [lexer] [parser] t "parse" in
+    let d = unwrap o in
+
+    expect_eq d (Atom( "output", meta 0 0)) "should produce atom output from input"
+)
 (* 
     capture group reference
     nested capture group reference
-    variable nested inside function works
     parse reference
     rule reference
-    function match
-    function match with atom
-    function match with multiple atoms
     function match with group reference (also nested)
     function match with parse reference
     function match with rule reference
+    function match with wildcard
+    function match with variable
+    function match with complex interior
     multiple cases
     nothing pattern match
     nothing construction
