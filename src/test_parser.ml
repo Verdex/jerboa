@@ -158,6 +158,32 @@ test "parser with single rule single case and single function(atom, function(ato
 
     expect_eq d (Atom( "output", meta 0 0)) "should produce atom output from input"
 )
+
+;;
+
+test "parser with single rule two cases" (fun _ ->
+    let lexer : lexer = Lexer( "lex", [Rule( "[a]", Atom "A")
+                                      ;Rule( "[b]", Atom "B")
+                                      ]) in
+    let parser : parser = Parser( "parse", [Rule( "main", [Case( [Atom "A"], Atom "o1")
+                                                          ;Case( [Atom "B"], Atom "o2")
+                                                          ] )]) in 
+
+    let t1 = lex lexer "a" in
+    let o1 = parse [lexer] [parser] t1 "parse" in
+    let d1 = unwrap o1 in
+
+    let t2 = lex lexer "b" in
+    let o2 = parse [lexer] [parser] t2 "parse" in
+    let d2 = unwrap o2 in
+
+    expect_eq d1 (Atom( "o1", meta 0 0)) "should produce atom o1 from input"
+
+    ;
+
+    expect_eq d2 (Atom( "o2", meta 0 0)) "should produce atom o2 from input"
+)
+
 (* 
     capture group reference
     nested capture group reference
@@ -169,7 +195,7 @@ test "parser with single rule single case and single function(atom, function(ato
     function match with wildcard
     function match with variable
     function match with complex interior
-    multiple cases
+    multiple cases with nothing pattern
     nothing pattern match
     nothing construction
     final index is correct
