@@ -178,9 +178,7 @@ test "parser with single rule two cases" (fun _ ->
     let d2 = unwrap o2 in
 
     expect_eq d1 (Atom( "o1", meta 0 0)) "should produce atom o1 from input"
-
     ;
-
     expect_eq d2 (Atom( "o2", meta 0 0)) "should produce atom o2 from input"
 )
 
